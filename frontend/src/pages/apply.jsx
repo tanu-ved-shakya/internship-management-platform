@@ -11,8 +11,8 @@ function Apply(){
             console.log("USER:", user);
             console.log("ID:", id);
             await api.post("/applications",{
-                studentName:user.name,
-                studentEmail:user.email,
+                studentName:user.user.name,
+                studentEmail:user.user.email,
                 internshipId:id
             });
             alert("Application submitted successfully");

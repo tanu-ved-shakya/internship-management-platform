@@ -1,6 +1,8 @@
 import {Link} from "react-router-dom";
 
 function InternshipCard({ internship }) {
+
+    console.log("internship:", internship);
     return (
         <div
             style={{
@@ -18,18 +20,19 @@ function InternshipCard({ internship }) {
                 <p><strong>Stipend:</strong> {internship.stipend}</p>
                 <p><strong>Duration:</strong> {internship.duration}</p>
                 <p><strong>Skills Required:</strong> {internship.skillsRequired.join(", ")}</p>
-                <button style={{
-                    backgroundColor:"#035dbc",
-                    color:"white",
-                    border:"none",
-                    padding:"10px 20px",
-                    borderRadius:"5px",
-                    cursor:"pointer"
-                }}>
-                    <Link to={`/apply/${internship.id}`} style={{ color: "white", textDecoration: "none" }}>
-                        Apply
-                    </Link>
-                </button>
+<Link
+    to={`/apply/${internship._id}`}
+    style={{
+        backgroundColor:"#035dbc",
+        color:"white",
+        padding:"10px 20px",
+        borderRadius:"5px",
+        textDecoration:"none",
+        display:"inline-block"
+    }}
+>
+    Apply
+</Link>
             </div>
         );
     }

@@ -1,40 +1,44 @@
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
-function InternshipCard({ internship }) {
-
-    console.log("internship:", internship);
+function InternshipCard({ internship, userRole, hasApplied }) {
     return (
-        <div
-            style={{
-                border:"1px solid gray",
-                padding:"15px",
-                margin:"15px",
-                borderRadius:"10px",
-                boxShadow:"0 4px 8px rgba(0,0,0,0.1)"
-
-            }}
-            >
-                <h2>{internship.title}</h2>
-                <p>{internship.description}</p>
-                <p><strong>Location:</strong> {internship.location}</p>
-                <p><strong>Stipend:</strong> {internship.stipend}</p>
-                <p><strong>Duration:</strong> {internship.duration}</p>
-                <p><strong>Skills Required:</strong> {internship.skillsRequired.join(", ")}</p>
-<Link
-    to={`/apply/${internship._id}`}
-    style={{
-        backgroundColor:"#035dbc",
-        color:"white",
-        padding:"10px 20px",
-        borderRadius:"5px",
-        textDecoration:"none",
-        display:"inline-block"
-    }}
->
-    Apply
-</Link>
+        <div className="internship-card">
+            <div className="card-header">
+                <h2 className="card-title">{internship.title}</h2>
+                <span className="card-badge">{internship.location}</span>
             </div>
-        );
-    }
+            <p className="card-desc">{internship.description}</p>
+            <div className="card-details">
+                <div>
+                    <strong>Stipend:</strong> {internship.stipend}
+                </div>
+                <div>
+                    <strong>Duration:</strong> {internship.duration}
+                </div>
+                {internship.skillsRequired && internship.skillsRequired.length > 0 && (
+                    <div className="card-skills">
+                        <strong>Skills:</strong>{" "}
+                        {internship.skillsRequired.map((skill, idx) => (
+                            <span key={idx} className="skill-tag">
+                                {skill}
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
+            {userRole === "student" && (
+                <div className="card-actions">
+                    {hasApplied ? (
+                        <span className="status-badge status-applied">Applied</span>
+                    ) : (
+                        <Link to={`/apply/${internship._id}`} className="btn-primary-sm">
+                            Apply
+                        </Link>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default InternshipCard;

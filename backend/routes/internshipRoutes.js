@@ -3,13 +3,18 @@ console.log("Internship routes loaded");
 const express= require("express");
 const router=express.Router();
 
-const{
+const {
+    isAuthenticated,
+    isAdmin
+} = require("../middleware/auth");
+
+const {
     createInternship,
     getInternships
 } = require("../controller/internshipController");
 
-router.post("/internships",createInternship);
-router.get("/internships",getInternships);
+router.post("/internships", isAuthenticated, isAdmin, createInternship);
+router.get("/internships", isAuthenticated, getInternships);
 
 
 module.exports=router;

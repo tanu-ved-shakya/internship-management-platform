@@ -1,103 +1,132 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 function Applications() {
+    const { user } = useAuth();
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const [applications, setApplications] =
-        useState([]);
+    const fetchApplications = async () => {
+        setLoading(true);
+        try {
+            const response = await api.get("/applications");
+            setApplications(response.data);
+        } catch (err) {
+            console.error("Error fetching applications:", err);
+            setError("Failed to load applications. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-
-        const fetchApplications =
-            async () => {
-
-                const response =
-                    await api.get("/applications");
-
-                setApplications(
-                    response.data
-                );
-            };
-
         fetchApplications();
-
     }, []);
 
+    const handleUpdateStatus = async (id, newStatus) => {
+        try {
+            const response = await api.patch(`/applications/${id}`, {
+                status: newStatus
+            });
+            // Update applications list in state directly
+            setApplications(
+                applications.map((app) => (app._id === id ? response.data : app))
+            );
+        } catch (err) {
+            alert(err.response?.data?.message || "Failed to update application status.");
+        }
+    };
+
+    if (loading) {
+        return <div className="loading-state">Loading applications...</div>;
+    }
+
     return (
-        <div>
+        <div className="page-container">
+            <div className="page-header">
+                <div>
+                    <h1 className="page-title">Applications</h1>
+                    <p className="page-subtitle">
+                        {user?.role === "admin"
+                            ? "Review and update applicant statuses."
+                            : "Track the status of your internship applications."}
+                    </p>
+                </div>
+            </div>
 
-            <h1>Applications</h1>
+            {error && <div className="error-message">{error}</div>}
 
-            {
-                applications.map(
-                    (application) => (
+            {applications.length > 0 ? (
+                <div className="applications-list">
+                    {applications.map((application) => {
+                        const internship = application.internshipId || {
+                            title: "Deleted Internship Listing",
+                            location: "N/A",
+                            stipend: "N/A"
+                        };
 
-                        <div
-                            key={application._id}
-                            style={{
-                                border:
-                                "1px solid gray",
-                                padding:"10px",
-                                margin:"10px"
-                            }}
-                        >
+                        const statusClass = 
+                            application.status === "Shortlisted" 
+                                ? "status-shortlisted" 
+                                : application.status === "Rejected" 
+                                ? "status-rejected" 
+                                : "status-applied";
 
-                            <h3>
-                                {
-                                application.studentName
-                                }
-                            </h3>
+                        return (
+                            <div key={application._id} className="application-card">
+                                <div className="app-card-header">
+                                    <div>
+                                        <h3 className="app-title">{internship.title}</h3>
+                                        <p className="app-meta">
+                                            Location: {internship.location} | Stipend: {internship.stipend}
+                                        </p>
+                                    </div>
+                                    <span className={`status-badge ${statusClass}`}>
+                                        {application.status}
+                                    </span>
+                                </div>
 
-                            <p>
-                                {
-                                application.studentEmail
-                                }
-                            </p>
+                                {user?.role === "admin" && (
+                                    <div className="app-card-candidate">
+                                        <h4 className="candidate-title">Applicant Details</h4>
+                                        <div className="candidate-info">
+                                            <div><strong>Name:</strong> {application.studentName}</div>
+                                            <div><strong>Email:</strong> {application.studentEmail}</div>
+                                            <div>
+                                                <strong>Applied On:</strong>{" "}
+                                                {new Date(application.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
 
-                            <p>
-                                Status:
-                                {
-                                application.status
-                                }
-                            </p>
-                             <button
-                onClick={async () => {
-
-                    await api.patch(
-                        `/applications/${application._id}`,
-                        {
-                            status: "Shortlisted"
-                        }
-                    );
-
-                    window.location.reload();
-                }}
-            >
-                Shortlist
-            </button>
-
-            <button
-                onClick={async () => {
-
-                    await api.patch(
-                        `/applications/${application._id}`,
-                        {
-                            status: "Rejected"
-                        }
-                    );
-
-                    window.location.reload();
-                }}
-            >
-                Reject
-            </button>
-
-                        </div>
-
-                    )
-                )
-            }
-
+                                        {application.status === "Applied" && (
+                                            <div className="app-card-actions">
+                                                <button
+                                                    onClick={() => handleUpdateStatus(application._id, "Shortlisted")}
+                                                    className="btn-success-sm"
+                                                >
+                                                    Shortlist
+                                                </button>
+                                                <button
+                                                    onClick={() => handleUpdateStatus(application._id, "Rejected")}
+                                                    className="btn-danger-sm"
+                                                >
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="empty-state">
+                    <p>No applications found.</p>
+                </div>
+            )}
         </div>
     );
 }

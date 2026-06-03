@@ -1,51 +1,72 @@
-import {useState} from "react";
-import api from "../services/api";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-function Login(){
-    const [email,setEmail]=useState("");
-    const [password,setPassword]=useState("");
+function Login() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const { user, login } = useAuth();
+    const navigate = useNavigate();
 
-    const handleLogin=async(e)=>{
-        e.preventDefault();
-        try{
-            const response=await api.post("/login",{email,password});
-            
-            localStorage.setItem("user",JSON.stringify(response.data));
-            alert("Login successful");
-
-            window.location.href="/internships";
+    useEffect(() => {
+        if (user) {
+            navigate("/internships", { replace: true });
         }
-        catch(err){
-            console.error("Login failed:",err);
-            alert("Login failed");
+    }, [user, navigate]);
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError("");
+        if (!email || !password) {
+            setError("Please fill in all fields.");
+            return;
+        }
+        try {
+            await login(email, password);
+            navigate("/internships");
+        } catch (err) {
+            setError(err.message || "Invalid credentials. Please try again.");
         }
     };
 
-    return(
-        <div>
-            <h1>Login</h1>
-            <form onSubmit={handleLogin}>
-                <input 
-                    type="email" 
-                    placeholder="Email" 
-                    value={email}
-                    onChange={(e)=>setEmail(e.target.value)}
-                />
-                <input 
-                    type="password" 
-                    placeholder="Password" 
-                    value={password}
-                    onChange={(e)=>setPassword(e.target.value)}
-                />
-                <button type="submit">Login</button>
-            </form>
-            <p>
-    Don't have an account?
-
-    <a href="/register">
-        Sign Up
-    </a>
-</p>
+    return (
+        <div className="auth-container">
+            <div className="auth-card">
+                <h1 className="auth-title">Login</h1>
+                <p className="auth-subtitle">Welcome back! Please enter your credentials.</p>
+                {error && <div className="error-message">{error}</div>}
+                <form onSubmit={handleLogin} className="auth-form">
+                    <div className="form-group">
+                        <label htmlFor="email">Email Address</label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="name@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn-primary">
+                        Login
+                    </button>
+                </form>
+                <p className="auth-redirect">
+                    Don't have an account? <Link to="/register">Sign Up</Link>
+                </p>
+            </div>
         </div>
     );
 }

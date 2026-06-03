@@ -1,6 +1,11 @@
 const mongoose=require("mongoose");
 
 const applicationSchema=new mongoose.Schema({
+    studentId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true
+    },
     studentName:{
         type:String,
         required:true
@@ -16,7 +21,7 @@ const applicationSchema=new mongoose.Schema({
     },
     status:{
         type:String,
-        enum:["Applied","Accepted","Rejected"],
+        enum:["Applied","Shortlisted","Rejected"],
         default:"Applied"
     }
 },{

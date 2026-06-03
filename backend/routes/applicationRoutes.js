@@ -1,13 +1,19 @@
 const express = require('express');
 const router = express.Router();
 
-const{
+const {
+    isAuthenticated,
+    isStudent,
+    isAdmin
+} = require("../middleware/auth");
+
+const {
     createApplication,
     getApplications,
     updateApplicationStatus
-}=require("../controller/applicationController");
+} = require("../controller/applicationController");
 
-router.post("/applications", createApplication);
-router.get("/applications", getApplications);
-router.patch("/applications/:id", updateApplicationStatus);
+router.post("/applications", isAuthenticated, isStudent, createApplication);
+router.get("/applications", isAuthenticated, getApplications);
+router.patch("/applications/:id", isAuthenticated, isAdmin, updateApplicationStatus);
 module.exports = router;

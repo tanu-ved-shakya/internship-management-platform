@@ -15,8 +15,10 @@ const app = express();
 // Trust reverse proxy for HTTPS cookie delivery on Vercel
 app.set("trust proxy", 1);
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB without terminating the serverless runtime on failure.
+connectDB().catch((err) => {
+    console.error("Database connection unavailable:", err.message);
+});
 
 // CORS configuration supporting dynamic production allowed origin
 const allowedOrigins = [
@@ -52,6 +54,10 @@ app.post("/api/check", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
